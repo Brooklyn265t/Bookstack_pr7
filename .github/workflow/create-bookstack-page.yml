@@ -27,10 +27,9 @@ jobs:
           mkdir page-generator
           cd page-generator
           npm init -y > /dev/null
-          npm install marked node-fetch@2 > /dev/null
+          npm install marked > /dev/null
 
-          echo "const fetch = require('node-fetch');
-          const marked = require('marked');
+          echo "const marked = require('marked');
 
           const title = process.env.ISSUE_TITLE;
           const body = process.env.ISSUE_BODY || 'Нет описания';
@@ -45,6 +44,7 @@ jobs:
             html: fullHtml
           };
 
+          // Используем встроенный fetch в Node.js 18+
           fetch(\`\${process.env.BOOKSTACK_URL}/api/pages\`, {
             method: 'POST',
             headers: {
