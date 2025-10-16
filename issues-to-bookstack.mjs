@@ -5,6 +5,9 @@ import fetch from 'node-fetch';
 const title = process.env.ISSUE_TITLE;
 const body = process.env.ISSUE_BODY;
 const url = process.env.ISSUE_URL;
+
+console.log(`URL is: ${url}/api/pages`);
+
 const htmlBody = marked.parse(body);
 const fullHtml = `<p><strong>Связанная задача:</strong> <a 
 href='${url}'>${url}</a></p>\n${htmlBody}`;
