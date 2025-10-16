@@ -17,6 +17,9 @@ jobs:
       - name: checkout repo
         uses: actions/checkout@v2
 
+      - name: debug ls files
+        run: ls -al
+
       - name: installing dependencies
         run: npm i marked node-fetch
 
