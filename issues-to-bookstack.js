@@ -1,5 +1,5 @@
-const fetch = require('node-fetch').default;
-const marked = require('marked');
+import { marked } from 'marked';
+import fetch from 'node-fetch';
 
 
 const title = process.env.ISSUE_TITLE;
