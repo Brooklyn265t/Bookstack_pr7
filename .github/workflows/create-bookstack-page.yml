@@ -13,6 +13,12 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18
+      
+      - name: checkout repo
+        uses: actions/checkout@v2
+
+      - name: installing dependencies
+        run: npm i marked node-fetch
 
       - name: Sync Issue to BookStack
         env:
@@ -26,112 +32,4 @@ jobs:
           ISSUE_NUMBER: ${{ github.event.issue.number }}
           ISSUE_STATE: ${{ github.event.issue.state }}
           GITHUB_EVENT_ACTION: ${{ github.event.action }}
-        run: |
-          mkdir page-generator
-          cd page-generator
-          npm init -y > /dev/null
-          npm install marked > /dev/null
-
-          echo "const marked = require('marked');
-
-          const title = process.env.ISSUE_TITLE;
-          const body = process.env.ISSUE_BODY || 'Нет описания';
-          const url = process.env.ISSUE_URL;
-          const issueNumber = process.env.ISSUE_NUMBER;
-          const issueState = process.env.ISSUE_STATE;
-          const eventAction = process.env.GITHUB_EVENT_ACTION;
-
-          console.log('Event Action:', eventAction);
-          console.log('Issue State:', issueState);
-
-          const htmlBody = marked.parse(body);
-          const fullHtml = \`<p><strong>Связанная задача:</strong> <a href='\${url}'>\${url}</a></p>\n\${htmlBody}\`;
-
-          const payload = {
-            name: title,
-            book_id: process.env.BOOKSTACK_BOOK_ID,
-            html: fullHtml
-          };
-
-          // Функция для поиска существующей страницы по заголовку
-          async function findExistingPage() {
-            try {
-              const response = await fetch(\`\${process.env.BOOKSTACK_URL}/api/pages?filter[name]=\${encodeURIComponent(title)}\`, {
-                headers: {
-                  'Authorization': \`Token \${process.env.BOOKSTACK_API_ID}:\${process.env.BOOKSTACK_API_SECRET}\`,
-                  'Content-Type': 'application/json'
-                }
-              });
-              
-              if (response.ok) {
-                const data = await response.json();
-                return data.data && data.data.length > 0 ? data.data[0] : null;
-              }
-              return null;
-            } catch (error) {
-              console.error('Error searching page:', error);
-              return null;
-            }
-          }
-
-          // Основная логика
-          async function syncToBookStack() {
-            const existingPage = await findExistingPage();
-
-            if (eventAction === 'closed') {
-              // При закрытии Issue - обновляем статью с пометкой
-              if (existingPage) {
-                const updatePayload = {
-                  ...payload,
-                  html: fullHtml + '<p><strong>Статус:</strong> Задача закрыта</p>'
-                };
-                
-                await fetch(\`\${process.env.BOOKSTACK_URL}/api/pages/\${existingPage.id}\`, {
-                  method: 'PUT',
-                  headers: {
-                    'Authorization': \`Token \${process.env.BOOKSTACK_API_ID}:\${process.env.BOOKSTACK_API_SECRET}\`,
-                    'Content-Type': 'application/json'
-                  },
-                  body: JSON.stringify(updatePayload)
-                });
-                console.log('Page updated with closed status');
-              }
-              return;
-            }
-
-            if (existingPage) {
-              // Обновляем существующую страницу
-              await fetch(\`\${process.env.BOOKSTACK_URL}/api/pages/\${existingPage.id}\`, {
-                method: 'PUT',
-                headers: {
-                  'Authorization': \`Token \${process.env.BOOKSTACK_API_ID}:\${process.env.BOOKSTACK_API_SECRET}\`,
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
-              });
-              console.log('Page updated successfully');
-            } else {
-              // Создаем новую страницу
-              const response = await fetch(\`\${process.env.BOOKSTACK_URL}/api/pages\`, {
-                method: 'POST',
-                headers: {
-                  'Authorization': \`Token \${process.env.BOOKSTACK_API_ID}:\${process.env.BOOKSTACK_API_SECRET}\`,
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
-              });
-              
-              if (!response.ok) {
-                console.error('Failed to create page:', response.status, response.statusText);
-                const errorText = await response.text();
-                console.error('Error response:', errorText);
-              } else {
-                console.log('Page created successfully');
-              }
-            }
-          }
-
-          syncToBookStack().catch(err => console.error('Sync error:', err));
-          " > sync-page.js
-
-          node sync-page.js
+        run: node issues-to-bookstack.js
