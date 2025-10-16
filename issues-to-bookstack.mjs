@@ -6,8 +6,6 @@ const title = process.env.ISSUE_TITLE;
 const body = process.env.ISSUE_BODY;
 const url = process.env.ISSUE_URL;
 
-console.log(`URL is: ${url}/api/pages`);
-
 const htmlBody = marked.parse(body);
 const fullHtml = `<p><strong>Связанная задача:</strong> <a 
 href='${url}'>${url}</a></p>\n${htmlBody}`;
@@ -18,7 +16,7 @@ const payload = {
     html: fullHtml
 };
 
-fetch(`${url}/api/pages`, {
+fetch(`${process.env.BOOKSTACK_URL}/api/pages`, {
     method: 'POST',
     headers: {
         'Authorization': `Token ${process.env.BOOKSTACK_API_ID}:${process.env.BOOKSTACK_API_SECRET}`,
