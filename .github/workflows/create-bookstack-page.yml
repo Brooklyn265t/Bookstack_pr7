@@ -35,4 +35,4 @@ jobs:
           ISSUE_NUMBER: ${{ github.event.issue.number }}
           ISSUE_STATE: ${{ github.event.issue.state }}
           GITHUB_EVENT_ACTION: ${{ github.event.action }}
-        run: node issues-to-bookstack.js
+        run: node issues-to-bookstack.mjs
